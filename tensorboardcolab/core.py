@@ -20,7 +20,11 @@ class TensorBoardColab:
             get_ipython().system_raw('rm -Rf ' + graph_path)
             print('Wait for %d seconds...' % startup_waiting_time)
             time.sleep(sleep_time)
-            get_ipython().system_raw('tensorboard --logdir %s --host 0.0.0.0 --port %d &' % (graph_path, port))
+            # As per the https://cloud.google.com/tpu/docs/tensorboard-setup
+            if 'COLAB_TPU_ADDR' in os.environ:
+                get_ipython().system_raw('tensorboard --logdir %s --host 0.0.0.0 --port %d --master_tpu_unsecure_channel=%s &' % (graph_path, port, os.environ['COLAB_TPU_ADDR'].split(":")[0]))
+            else:
+                get_ipython().system_raw('tensorboard --logdir %s --host 0.0.0.0 --port %d &' % (graph_path, port))
             time.sleep(sleep_time)
             get_ipython().system_raw('ngrok http %d &' % port)
             time.sleep(sleep_time)
